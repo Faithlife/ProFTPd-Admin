@@ -18,13 +18,18 @@ if ($cfg['passwd_encryption'] == "pbkdf2") {
   require "unix_crypt.php";
 }
 
+$tableQuoteChar = '';
+
 include_once "ez_sql_core.php";
 if (!isset($cfg['db_type']) || $cfg['db_type'] == "mysqli") {
   include_once "ez_sql_mysqli.php";
+  $tableQuoteChar = '`';
 } elseif ($cfg['db_type'] == "mysql") {
   include_once "ez_sql_mysql.php";
+  $tableQuoteChar = '`';
 } elseif ($cfg['db_type'] == "sqlite3") {
   include_once "ez_sql_sqlite3.php";
+  $tableQuoteChar = '"';
 } else {
   trigger_error('Unsupported database type: "'.$cfg['db_type'].'"', E_USER_WARNING);
 }
@@ -89,7 +94,7 @@ class AdminClass {
      */
     function parse_groups($userid = false) {
         $format = 'SELECT * FROM %s';
-        $query = sprintf($format, $this->config['table_groups']);
+        $query = sprintf($format, $this->quote($this->config['table_groups']));
         $result = $this->dbConn->get_results($query);
         $data = array();
         if ($result) {
@@ -118,7 +123,7 @@ class AdminClass {
      */
     function get_groups() {
         $format = 'SELECT * FROM %s ORDER BY %s ASC';
-        $query = sprintf($format, $this->config['table_groups'], $this->config['field_gid']);
+        $query = sprintf($format, $this->quote($this->config['table_groups']), $this->config['field_gid']);
         $result = $this->dbConn->get_results($query);
         $data = array();
         if ($result) {
@@ -137,7 +142,7 @@ class AdminClass {
      */
     function get_users() {
         $format = 'SELECT * FROM %s ORDER BY %s ASC';
-        $query = sprintf($format, $this->config['table_users'], $this->config['field_id']);
+        $query = sprintf($format, $this->quote($this->config['table_users']), $this->config['field_id']);
         $result = $this->dbConn->get_results($query, ARRAY_A);
         if (!$result) return false;
         return $result;
@@ -150,7 +155,7 @@ class AdminClass {
      */
     function get_group_count($only_empty = false) {
         $format = 'SELECT COUNT(*) FROM %s';
-        $query = sprintf($format, $this->config['table_groups']);
+        $query = sprintf($format, $this->quote($this->config['table_groups']));
         if ($only_empty) {
             $where_format = ' WHERE %s=""';
             $where_clause = sprintf($where_format, $this->config['field_members']);
@@ -167,7 +172,7 @@ class AdminClass {
      */
     function get_user_count($only_disabled = false) {
         $format = 'SELECT COUNT(*) FROM %s';
-        $query = sprintf($format, $this->config['table_users']);
+        $query = sprintf($format, $this->quote($this->config['table_users']));
         if ($only_disabled) {
             $where_format = ' WHERE %s="1"';
             $where_clause = sprintf($where_format, $this->config['field_disabled']);
@@ -183,7 +188,7 @@ class AdminClass {
      */
     function get_last_uid() {
         $format = 'SELECT MAX(%s) FROM %s';
-        $query = sprintf($format, $this->config['field_uid'], $this->config['table_users']);
+        $query = sprintf($format, $this->config['field_uid'], $this->quote($this->config['table_users']));
         $result = $this->dbConn->get_var($query);
         return $result;
     }
@@ -195,7 +200,7 @@ class AdminClass {
      */
     function check_groupname($groupname) {
         $format = 'SELECT 1 FROM %s WHERE %s="%s"';
-        $query = sprintf($format, $this->config['table_groups'], $this->config['field_groupname'], $groupname);
+        $query = sprintf($format, $this->quote($this->config['table_groups']), $this->config['field_groupname'], $groupname);
         $result = $this->dbConn->get_row($query);
         if (is_object($result)) return true;
         return false;
@@ -208,7 +213,7 @@ class AdminClass {
      */
     function check_gid($gid) {
         $format = 'SELECT 1 FROM %s WHERE %s="%s"';
-        $query = sprintf($format, $this->config['table_groups'], $this->config['field_gid'], $gid);
+        $query = sprintf($format, $this->quote($this->config['table_groups']), $this->config['field_gid'], $gid);
         $result = $this->dbConn->get_row($query);
         if (is_object($result)) return true;
         return false;
@@ -221,7 +226,7 @@ class AdminClass {
      */
     function check_username($userid) {
         $format = 'SELECT 1 FROM %s WHERE %s="%s"';
-        $query = sprintf($format, $this->config['table_users'], $this->config['field_userid'], $userid);
+        $query = sprintf($format, $this->quote($this->config['table_users']), $this->config['field_userid'], $userid);
         $result = $this->dbConn->get_row($query);
         if (is_object($result)) return true;
         return false;
@@ -234,7 +239,7 @@ class AdminClass {
      */
     function check_id($id) {
         $format = 'SELECT 1 FROM %s WHERE %s="%s"';
-        $query = sprintf($format, $this->config['table_users'], $this->config['field_id'], $id);
+        $query = sprintf($format, $this->quote($this->config['table_users']), $this->config['field_id'], $id);
         $result = $this->dbConn->get_row($query);
         if (is_object($result)) return true;
         return false;
@@ -247,7 +252,7 @@ class AdminClass {
      */
     function check_uid($uid) {
         $format = 'SELECT 1 FROM %s WHERE %s="%s"';
-        $query = sprintf($format, $this->config['table_users'], $this->config['field_uid'], $uid);
+        $query = sprintf($format, $this->quote($this->config['table_users']), $this->config['field_uid'], $uid);
         $result = $this->dbConn->get_row($query);
         if (is_object($result)) return true;
         return false;
@@ -263,7 +268,7 @@ class AdminClass {
         $field_gid       = $this->config['field_gid'];
         $field_members   = $this->config['field_members'];
         $format = 'INSERT INTO %s (%s,%s,%s) VALUES ("%s","%s","%s")';
-        $query = sprintf($format, $this->config['table_groups'],
+        $query = sprintf($format, $this->quote($this->config['table_groups']),
                                   $field_groupname,
                                   $field_gid,
                                   $field_members,
@@ -310,7 +315,7 @@ class AdminClass {
           $passwd = $passwd_encryption.'("'.$userdata[$field_passwd].'")';
         }
         $format = 'INSERT INTO %s (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) VALUES ("%s","%s","%s",%s,"%s","%s","%s","%s","%s","%s","%s","%s","%s","%s",%s)';
-        $query = sprintf($format, $this->config['table_users'],
+        $query = sprintf($format, $this->quote($this->config['table_users']),
                                   $field_userid,
                                   $field_uid,
                                   $field_ugid,
@@ -353,7 +358,7 @@ class AdminClass {
     function get_group_by_gid($gid) {
         if (empty($gid)) return false;
         $format = 'SELECT * FROM %s WHERE %s="%s"';
-        $query = sprintf($format, $this->config['table_groups'], $this->config['field_gid'], $gid);
+        $query = sprintf($format, $this->quote($this->config['table_groups']), $this->config['field_gid'], $gid);
         $result = $this->dbConn->get_row($query, ARRAY_A);
         if (!$result) return false;
         return $result;
@@ -367,7 +372,7 @@ class AdminClass {
     function get_user_by_userid($userid) {
         if (empty($userid)) return false;
         $format = 'SELECT * FROM %s WHERE %s="%s"';
-        $query = sprintf($format, $this->config['table_users'], $this->config['field_userid'], $userid);
+        $query = sprintf($format, $this->quote($this->config['table_users']), $this->config['field_userid'], $userid);
         $result = $this->dbConn->get_row($query, ARRAY_A);
         if (!$result) return false;
         return $result;
@@ -381,7 +386,7 @@ class AdminClass {
     function get_user_by_id($id) {
         if (empty($id)) return false;
         $format = 'SELECT * FROM %s WHERE %s="%s"';
-        $query = sprintf($format, $this->config['table_users'], $this->config['field_id'], $id);
+        $query = sprintf($format, $this->quote($this->config['table_users']), $this->config['field_id'], $id);
         $result = $this->dbConn->get_row($query, ARRAY_A);
         if (!$result) return false;
         return $result;
@@ -396,7 +401,7 @@ class AdminClass {
     function get_users_by_gid($gid) {
         if (empty($gid)) return false;
         $format = 'SELECT %s, %s FROM %s WHERE %s="%s"';
-        $query = sprintf($format, $this->config['field_id'], $this->config['field_userid'], $this->config['table_users'], $this->config['field_ugid'], $gid);
+        $query = sprintf($format, $this->config['field_id'], $this->config['field_userid'], $this->quote($this->config['table_users']), $this->config['field_ugid'], $gid);
         $result = $this->dbConn->get_results($query);
         if (!$result) return false;
 
@@ -421,7 +426,7 @@ class AdminClass {
     function get_user_count_by_gid($gid) {
         if (empty($gid)) return false;
         $format = 'SELECT COUNT(*) FROM %s WHERE %s="%s"';
-        $query = sprintf($format, $this->config['table_users'], $this->config['field_ugid'], $gid);
+        $query = sprintf($format, $this->quote($this->config['table_users']), $this->config['field_ugid'], $gid);
         $result = $this->dbConn->get_var($query);
         if (!$result) return 0;
         return $result;
@@ -486,7 +491,7 @@ class AdminClass {
     function add_user_to_group($userid, $gid) {
         if (empty($userid) || empty($gid)) return false;
         $format = 'SELECT %s FROM %s WHERE %s="%s"';
-        $query = sprintf($format, $this->config['field_members'], $this->config['table_groups'], $this->config['field_gid'], $gid);
+        $query = sprintf($format, $this->config['field_members'], $this->quote($this->config['table_groups']), $this->config['field_gid'], $gid);
         $result = $this->dbConn->get_var($query);
         if ($result != "") {
             if(strpos($result, $userid) !== false) {
@@ -499,7 +504,7 @@ class AdminClass {
         }
 
         $format = 'UPDATE %s SET %s="%s" WHERE %s="%s"';
-        $query = sprintf($format, $this->config['table_groups'], $this->config['field_members'], $members, $this->config['field_gid'], $gid);
+        $query = sprintf($format, $this->quote($this->config['table_groups']), $this->config['field_members'], $members, $this->config['field_gid'], $gid);
         $result = $this->dbConn->query($query);
         if (!$result) return false;
         return true;
@@ -514,7 +519,7 @@ class AdminClass {
     function remove_user_from_group($userid, $gid) {
         if (empty($userid) || empty($gid)) return false;
         $format = 'SELECT %s FROM %s WHERE %s="%s"';
-        $query = sprintf($format, $this->config['field_members'], $this->config['table_groups'], $this->config['field_gid'], $gid);
+        $query = sprintf($format, $this->config['field_members'], $this->quote($this->config['table_groups']), $this->config['field_gid'], $gid);
         $result = $this->dbConn->get_var($query);
         if(!$result || strpos($result, $userid) === false) {
             return true;
@@ -528,7 +533,7 @@ class AdminClass {
         }
 
         $format = 'UPDATE %s SET %s="%s" WHERE %s="%s"';
-        $query = sprintf($format, $this->config['table_groups'], $this->config['field_members'], $members_new, $this->config['field_gid'], $gid);
+        $query = sprintf($format, $this->quote($this->config['table_groups']), $this->config['field_members'], $members_new, $this->config['field_gid'], $gid);
         $result = $this->dbConn->query($query);
         if (!$result) return false;
         return true;
@@ -542,10 +547,10 @@ class AdminClass {
      */
     function update_group($gid, $new_gid) {
         $format = 'UPDATE %s SET %s="%s" WHERE %s="%s"';
-        $query = sprintf($format, $this->config['table_users'], $this->config['field_ugid'], $new_gid, $this->config['field_ugid'], $gid);
+        $query = sprintf($format, $this->quote($this->config['table_users']), $this->config['field_ugid'], $new_gid, $this->config['field_ugid'], $gid);
         $result = $this->dbConn->query($query);
 
-        $query = sprintf($format, $this->config['table_groups'], $this->config['field_gid'], $new_gid, $this->config['field_gid'], $gid);
+        $query = sprintf($format, $this->quote($this->config['table_groups']), $this->config['field_gid'], $new_gid, $this->config['field_gid'], $gid);
         $result = $this->dbConn->query($query);
         return $result;
     }
@@ -557,7 +562,7 @@ class AdminClass {
      */
     function delete_group_by_gid($gid) {
         $format = 'DELETE FROM %s WHERE %s="%s"';
-        $query = sprintf($format, $this->config['table_groups'], $this->config['field_gid'], $gid);
+        $query = sprintf($format, $this->quote($this->config['table_groups']), $this->config['field_gid'], $gid);
         $result = $this->dbConn->query($query);
         return $result;
     }
@@ -607,7 +612,7 @@ class AdminClass {
         }
 
         $format = 'UPDATE %s SET %s %s="%s", %s="%s", %s="%s", %s="%s", %s="%s", %s="%s", %s="%s", %s="%s", %s="%s", %s="%s", %s="%s", %s="%s", %s="%s", %s=%s WHERE %s="%s"';
-        $query = sprintf($format, $this->config['table_users'],
+        $query = sprintf($format, $this->quote($this->config['table_users']),
                                   $passwd_query,
                                   $field_userid,        $userdata[$field_userid],
                                   $field_uid,           $userdata[$field_uid],
@@ -635,7 +640,7 @@ class AdminClass {
      */
     function remove_user_by_id($id) {
         $format = 'DELETE FROM %s WHERE %s="%s"';
-        $query = sprintf($format, $this->config['table_users'], $this->config['field_id'], $id);
+        $query = sprintf($format, $this->quote($this->config['table_users']), $this->config['field_id'], $id);
         $result = $this->dbConn->query($query);
         return $result;
     }
@@ -662,6 +667,11 @@ class AdminClass {
      */
     function is_valid_id($id) {
         return is_numeric($id) && (int)$id > 0 && $id == round($id);
+    }
+
+    function quote($table) {
+        global $tableQuoteChar;
+        return $tableQuoteChar.$table.$tableQuoteChar;
     }
 }
 
