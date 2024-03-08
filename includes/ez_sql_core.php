@@ -163,6 +163,11 @@
 			{
 				$this->query($query);
 			}
+			
+			if ( !$this->last_result )
+			{
+				return null;
+			}
 
 			// If the output is an object then return object using the row offset..
 			if ( $output == OBJECT )
