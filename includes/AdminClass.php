@@ -309,7 +309,7 @@ class AdminClass {
         } else {
           $passwd = $passwd_encryption.'("'.$userdata[$field_passwd].'")';
         }
-        $format = 'INSERT INTO `%s` (`%s`,`%s`,`%s`,`%s`,`%s`,`%s`,`%s`,`%s`,`%s`,`%s`,`%s`,`%s`,`%s`,`%s`,`%s`) VALUES ("%s","%s","%s",%s,"%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s")';
+        $format = 'INSERT INTO `%s` (`%s`,`%s`,`%s`,`%s`,`%s`,`%s`,`%s`,`%s`,`%s`,`%s`,`%s`,`%s`,`%s`,`%s`,`%s`) VALUES ("%s","%s","%s",%s,"%s","%s","%s","%s","%s","%s","%s","%s","%s","%s",%s)';
         $query = sprintf($format, $this->config['table_users'],
                                   $field_userid,
                                   $field_uid,
@@ -340,9 +340,7 @@ class AdminClass {
                                   $userdata[$field_comment],
                                   $userdata[$field_disabled],
                                   date('Y-m-d H:i:s'),
-                                  //$userdata[$expiration]
-				  date("Y-m-d H:i:s", strtotime("+1 month"))
-				);
+                                  $userdata[$field_expiration] ? "'".$userdata[$field_expiration]."'" : "NULL");
         $result = $this->dbConn->query($query);
         return $result;
     }
@@ -608,7 +606,7 @@ class AdminClass {
           $passwd_query = sprintf($passwd_format, $field_passwd, $passwd);
         }
 
-        $format = 'UPDATE `%s` SET %s `%s`="%s", `%s`="%s", `%s`="%s", `%s`="%s", `%s`="%s", `%s`="%s", `%s`="%s", `%s`="%s", `%s`="%s", `%s`="%s", `%s`="%s", `%s`="%s", `%s`="%s", `%s`="%s" WHERE `%s`="%s"';
+        $format = 'UPDATE `%s` SET %s `%s`="%s", `%s`="%s", `%s`="%s", `%s`="%s", `%s`="%s", `%s`="%s", `%s`="%s", `%s`="%s", `%s`="%s", `%s`="%s", `%s`="%s", `%s`="%s", `%s`="%s", `%s`=%s WHERE `%s`="%s"';
         $query = sprintf($format, $this->config['table_users'],
                                   $passwd_query,
                                   $field_userid,        $userdata[$field_userid],
@@ -624,7 +622,7 @@ class AdminClass {
                                   $field_comment,       $userdata[$field_comment],
                                   $field_disabled,      $userdata[$field_disabled],
                                   $field_last_modified, date('Y-m-d H:i:s'),
-                                  $field_expiration,    $userdata[$field_expiration],
+                                  $field_expiration,    $userdata[$field_expiration] ? "'".$userdata[$field_expiration]."'" : "NULL",
                                   $field_id,            $userdata[$field_id]);
         $result = $this->dbConn->query($query);
         return $result;
