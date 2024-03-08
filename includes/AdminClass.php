@@ -65,7 +65,7 @@ class AdminClass {
         $this->config = $cfg;
         // if db_type is not set, default to mysqli
         if (!isset($cfg['db_type']) || $cfg['db_type'] == "mysqli") {
-            $this->dbConn = new ezSQL_mysqli($this->config['db_user'], $this->config['db_pass'], $this->config['db_name'], $this->config['db_host']);
+            $this->dbConn = new ezSQL_mysqli($this->config['db_user'], $this->config['db_pass'], $this->config['db_name'], $this->config['db_host'], '', $this->config['db_ssl']);
         } elseif ($cfg['db_type'] == "mysql") {
             $this->dbConn = new ezSQL_mysql($this->config['db_user'], $this->config['db_pass'], $this->config['db_name'], $this->config['db_host']);
         } elseif ($cfg['db_type'] == "sqlite3") {

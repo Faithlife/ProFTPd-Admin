@@ -39,6 +39,7 @@
 		var $dbhost = false;
 		var $dbport = false;
 		var $encoding = false;
+		var $ssl = false;
 		var $rows_affected = false;
 
 		/**********************************************************************
@@ -46,13 +47,14 @@
 		*  same time as initialising the ezSQL_mysqli class
 		*/
 
-		function __construct($dbuser='', $dbpassword='', $dbname='', $dbhost='localhost', $encoding='')
+		function __construct($dbuser='', $dbpassword='', $dbname='', $dbhost='localhost', $encoding='', $ssl=false)
 		{
 			$this->dbuser = $dbuser;
 			$this->dbpassword = $dbpassword;
 			$this->dbname = $dbname;
 			list( $this->dbhost, $this->dbport ) = $this->get_host_port( $dbhost, 3306 );
 			$this->encoding = $encoding;
+			$this->ssl = $ssl;
 		}
 
 		/**********************************************************************
@@ -60,10 +62,10 @@
 		*  and select a mySQL database at the same time
 		*/
 
-		function quick_connect($dbuser='', $dbpassword='', $dbname='', $dbhost='localhost', $dbport='3306', $encoding='')
+		function quick_connect($dbuser='', $dbpassword='', $dbname='', $dbhost='localhost', $dbport='3306', $encoding='', $ssl=false)
 		{
 			$return_val = false;
-			if ( ! $this->connect($dbuser, $dbpassword, $dbhost, $dbport) ) ;
+			if ( ! $this->connect($dbuser, $dbpassword, $dbhost, $dbport, $ssl) ) ;
 			else if ( ! $this->select($dbname,$encoding) ) ;
 			else $return_val = true;
 			return $return_val;
@@ -73,7 +75,7 @@
 		*  Try to connect to mySQL database server
 		*/
 
-		function connect($dbuser='', $dbpassword='', $dbhost='localhost', $dbport=false)
+		function connect($dbuser='', $dbpassword='', $dbhost='localhost', $dbport=false, $ssl=false)
 		{
 			global $ezsql_mysqli_str; $return_val = false;
 			
@@ -94,9 +96,13 @@
 			// Try to establish the server database handle
 			else
 			{
-				$this->dbh = new mysqli($dbhost,$dbuser,$dbpassword, '', $dbport);
+				$this->dbh = mysqli_init();
+				$flags = 0;
+				if( $ssl )
+					$flags = MYSQLI_CLIENT_SSL;
+				$this->dbh->real_connect($dbhost, $dbuser, $dbpassword, '', $dbport, '', $flags);
 				// Check for connection problem
-				if( $this->dbh->connect_errno )
+				if( !$this->dbh || $this->dbh->connect_errno )
 				{
 					$this->register_error($ezsql_mysqli_str[2].' in '.__FILE__.' on line '.__LINE__);
 					$this->show_errors ? trigger_error($ezsql_mysqli_str[2],E_USER_WARNING) : null;
@@ -181,7 +187,7 @@
 			// If there is no existing database connection then try to connect
 			if ( ! isset($this->dbh) || ! $this->dbh )
 			{
-				$this->connect($this->dbuser, $this->dbpassword, $this->dbhost, $this->dbport);
+				$this->connect($this->dbuser, $this->dbpassword, $this->dbhost, $this->dbport, $this->ssl);
 				$this->select($this->dbname, $this->encoding);
 			}
                         
@@ -213,7 +219,7 @@
 			if ( $this->count(false) >= 500 )
 			{
 				$this->disconnect();
-				$this->quick_connect($this->dbuser,$this->dbpassword,$this->dbname,$this->dbhost,$this->dbport,$this->encoding);
+				$this->quick_connect($this->dbuser,$this->dbpassword,$this->dbname,$this->dbhost,$this->dbport,$this->encoding,$this->ssl);
 			}
 
 			// Initialise return
@@ -255,7 +261,7 @@
 			// If there is no existing database connection then try to connect
 			if ( ! isset($this->dbh) || ! $this->dbh )
 			{
-				$this->connect($this->dbuser, $this->dbpassword, $this->dbhost, $this->dbport);
+				$this->connect($this->dbuser, $this->dbpassword, $this->dbhost, $this->dbport, $this->ssl);
 				$this->select($this->dbname,$this->encoding);
 				// No existing connection at this point means the server is unreachable
 				if ( ! isset($this->dbh) || ! $this->dbh || $this->dbh->connect_errno )
