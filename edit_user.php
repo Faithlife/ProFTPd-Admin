@@ -195,7 +195,7 @@ if (empty($errormsg)) {
   $userid     = $_REQUEST[$field_userid];
   $uid        = $_REQUEST[$field_uid];
   $ugid       = $_REQUEST[$field_ugid];
-  $ad_gid     = $_REQUEST[$field_ad_gid];
+  $ad_gid     = isset($_REQUEST[$field_ad_gid]) ? $_REQUEST[$field_ad_gid] : array();
   $passwd     = $_REQUEST[$field_passwd];
   $expiration = $_REQUEST[$field_expiration];
   $homedir    = $_REQUEST[$field_homedir];
