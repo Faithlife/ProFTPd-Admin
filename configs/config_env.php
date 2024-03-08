@@ -67,7 +67,7 @@ $cfg['field_groupname'] = "groupname";
 $cfg['field_gid'] = "gid";
 $cfg['field_members'] = "members";
 
-$cfg['default_uid'] = "1000"; //if empty next incremental will be default
+$cfg['default_uid'] = getenv("DEFAULT_UID") !== false ? getenv("DEFAULT_UID") : "1000"; //if empty next incremental will be default
 $cfg['default_homedir'] = "/srv/ftp";
 // Use either SHA1 or MD5 or any other supported by your MySQL-Server and ProFTPd
 // "pbkdf2" is supported if you are using ProFTPd 1.3.5.
@@ -84,10 +84,10 @@ $cfg['max_groupname_length'] = "32";
 $cfg['userid_regex']    = "/^([a-zA-Z][a-zA-Z0-9_\-]{0,".($cfg['max_userid_length']-1)."})$/i"; //every username must comply with this regex
 $cfg['groupname_regex'] = "/^([a-zA-Z][a-zA-Z0-9_\-]{0,".($cfg['max_groupname_length']-1)."})$/i"; //every username must comply with this regex
 // Set any of these to -1 to remove the constraint
-$cfg['min_uid'] = 1000;
-$cfg['max_uid'] = 65534;
-$cfg['min_gid'] = 1000;
-$cfg['max_gid'] = 65534;
+$cfg['min_uid'] = getenv("MIN_UID") ? (int)getenv("MIN_UID") : 1000;
+$cfg['max_uid'] = getenv("MAX_UID") ? (int)getenv("MAX_UID") : 65534;
+$cfg['min_gid'] = getenv("MIN_GID") ? (int)getenv("MIN_GID") : 1000;
+$cfg['max_gid'] = getenv("MAX_GID") ? (int)getenv("MAX_GID") : 65534;
 // Uncomment this to read crypt() settings from login.defs.
 // $cfg['read_login_defs'] = true;
 
