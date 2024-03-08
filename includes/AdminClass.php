@@ -341,7 +341,7 @@ class AdminClass {
                                   $userdata[$field_disabled],
                                   date('Y-m-d H:i:s'),
                                   //$userdata[$expiration]
-				  date("Y-m-d H:i:s", strtotime("+1 month", $time))
+				  date("Y-m-d H:i:s", strtotime("+1 month"))
 				);
         $result = $this->dbConn->query($query);
         return $result;
