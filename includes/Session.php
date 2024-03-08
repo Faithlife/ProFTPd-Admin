@@ -12,7 +12,7 @@
 class Session {
 
   private static $host;
-  private static $name = 'uid';
+  private static $name = 'session_user';
   private static $val;
   private static $sess;
   private static $sid = 'sid';
@@ -227,21 +227,21 @@ class Session {
       $data = trim(urlencode($data['username'])) . trim(urlencode($data['password']));
       $data = crypt($data, $hash);
       if ($data === $hash) {
-        self::set('uid', $data);
+        self::set('session_user', $data);
         self::close();
         return true;
       }
     }
 
-    // Logout action or uid invalid
-    if ($action === 'logout' || self::get('uid') !== $hash) {
+    // Logout action or session_user invalid
+    if ($action === 'logout' || self::get('session_user') !== $hash) {
       self::delete();
       self::close();
       return false;
     }
 
-    // Only check uid is valid
-    if (self::get('uid') === $hash) {
+    // Only check session_user is valid
+    if (self::get('session_user') === $hash) {
       self::close();
       return true;
     }
