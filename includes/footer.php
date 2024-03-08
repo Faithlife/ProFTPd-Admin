@@ -2,7 +2,7 @@
 
       <hr/>
       <footer>
-        <center><p style="font-size:x-small">ProFTPd Admin <?php echo $ac->get_version(); ?>  is licensed under GPLv2. See <a href="https://github.com/ChristianBeer/ProFTPd-Admin">github.com/ChristianBeer/ProFTPd-Admin</a> for more information.</p></center>
+        <p style="font-size:x-small; text-align:center;">ProFTPd Admin <?php echo $ac->get_version(); ?>  is licensed under GPLv2. See <a href="https://github.com/ChristianBeer/ProFTPd-Admin">github.com/ChristianBeer/ProFTPd-Admin</a> for more information.</p>
       </footer>
     </div> <!-- /container -->
 
@@ -20,7 +20,7 @@
         useCurrent : false,
         showClear: true,
         format:'YYYY-MM-DD HH:mm:00',
-	minDate: 'now',
+        minDate: 'now',
     <?php
       $field_expiration     = $cfg['field_expiration'];
       if (!empty($user[$field_expiration]) && $user[$field_expiration] != '0000-00-00 00:00:00' ) { ?>
